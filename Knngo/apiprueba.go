@@ -81,10 +81,26 @@ func loadDataset(test [][]float64, trainingSet *[][]float64, testSet *[][]float6
 func Distancia(d1 []float64, d2 []float64, longitud int) float64 {
 	var distancia float64
 	distancia = 0
-	for i:=0; i<longitud;i++ {
-		distancia = distancia + math.Pow((d1[i]-d2[i]), 2)
-		//fmt.Println(distancia)
+
+	numproc := 3
+	end := make(chan bool)
+	for i:=0; i< numproc; i++ {
+		go func(id int) {
+			for i:=id; i<longitud; i+= numproc {
+				distancia = distancia + math.Pow((d1[i]-d2[i]), 2)
+			}
+			end<- true
+		}(i)
+	}
+
+
+	for i:=0; i<numproc;i++ {
+		<-end
 	} 
+
+
+	//fmt.Println(distancia)
+
 	return math.Sqrt(distancia)
 
 }
